@@ -1,0 +1,59 @@
+[alias]
+
+                l = log --graph --decorate --stat
+                lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
+                f = fetch --prune origin
+                r = "!f() { git checkout $1 && git reset --hard origin/$1; }; f"
+                cr = "!f() { git checkout -b r/$1 && git push -u origin r/$1; }; f"
+                n = !git f && git r dev && git $1 $2
+                cb = "!f() { git checkout -b b/PROJECT-$1 ; }; f"
+                cf = "!f() { git checkout -b f/PROJECT-$1 ; }; f"
+                ch = "!f() { git checkout -b h/PROJECT-$1 ; }; f"
+                rd = "!f() { git rev-parse HEAD; git merge-base dev master; }; f"
+                d = "!f() { git branch -d `git branch | grep -E \"^  $1\"` ; }; f"
+                dd = "!f() { git branch -D `git branch | grep -E \"^  $1\"` ; }; f"
+                unmerged = !git branch -r --no-merged | grep -v HEAD | xargs -L1 git --no-pager log --pretty=tformat:'%Cgreen%d%Creset - %h by %an (%Cblue%ar%Creset)' -1
+                merged = !git branch -r --merged | grep -v HEAD | xargs -L1 git --no-pager log --pretty=tformat:'%Cgreen%d%Creset - %h by %an (%Cblue%ar%Creset)' -1
+                branch-name = !git rev-parse --abbrev-ref HEAD
+                jira-ticket = !echo $(git branch-name) | cut -d'/' -f 2
+                p = !git push -u origin $(git branch-name)
+                pf = !git push -fu origin $(git branch-name)
+                up = !git push --delete origin $(git branch-name)
+                capf = "!f() { git commit --amend --no-edit --date=\"$(date -R)\"; git pf; }; f"
+                canpf = "!f() { git commit --amend --date=\"$(date -R)\"; git pf; }; f"
+                acp = "!f() { test ! -z \"$1\" && git add -A && git commit -m \"$(git jira-ticket): $1\" && git p; }; f"
+                uc = "!f() { git diff --name-status master dev | grep src/AL | grep -E '^A|^M|^R' | grep wsdl; }; f"
+                ucr = "!f() { git diff --name-status master r/$1 | grep src/AL | grep -E '^A|^M|^R' | grep wsdl; }; f"
+                master-cleanse = !git master-cleanse-local
+                master-cleanse-local = !git checkout master && git master-cleanse-local-list-core | xargs git branch --delete
+                master-cleanse-local-list-core = "!git branch --merged | sed 's# * ##' | grep -v -E '^dev|^*master$|^r/|^release/|^HEAD$'"
+                master-cleanse-local-list = !git checkout master && git master-cleanse-local-list-core
+                master-cleanse-remote = "!git fetch -p origin | git branch --remotes --merged origin/master | sed 's# *origin/##' | grep -v -E '^dev|^master$|^r/|^release/|^HEAD$' | xargs -I% git push origin :% --no-verify 2>&1 | grep --colour=never 'deleted'"
+                master-cleanse-remote-list = "!git fetch -p origin | git branch --remotes --merged origin/master | sed 's# *origin/##' | grep -v -E '^dev|^master$|^r/|^release/|^HEAD$'"
+                gest = "!f() { test ! -z $1 && echo true; }; f"
+[difftool "sourcetree"]
+                cmd = 'C:/Program Files/KDiff3/kdiff3.exe' \"$LOCAL\" \"$REMOTE\"
+
+[mergetool "sourcetree"]
+                cmd = 'C:/Program Files/KDiff3/kdiff3.exe' \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
+                trustExitCode = true
+
+[merge]
+                tool = kdiff3
+
+[mergetool "kdiff3"]
+                path = C:/Program Files/KDiff3/kdiff3.exe
+
+[diff]
+                guitool = kdiff3
+
+[difftool "kdiff3"]
+                path = C:/Program Files/KDiff3/kdiff3.exe
+
+[core]
+                preloadindex = true
+                fscache = true
+                editor = \"C:/Program Files (x86)/GitExtensions/GitExtensions.exe\" fileeditor
+
+[gc]
+                auto = 256
